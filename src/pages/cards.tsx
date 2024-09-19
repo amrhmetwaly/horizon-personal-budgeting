@@ -1,3 +1,4 @@
+"use client";
 import CardsPage from '../components/CardsPage';
 
 export default function Cards() {

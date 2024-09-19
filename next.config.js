@@ -2,10 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["lh3.googleusercontent.com", "graph.facebook.com"], // Add any other domains you need
+    unoptimized: true,
   },
-  distDir: "dist",
-  output: "dist",
+  basePath:
+    process.env.NODE_ENV === "production" ? "/horizon-personal-budgeter" : "",
+  assetPrefix:
+    process.env.NODE_ENV === "production" ? "/horizon-personal-budgeter/" : "",
 };
 
 module.exports = nextConfig;
