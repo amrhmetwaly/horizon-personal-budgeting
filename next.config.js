@@ -4,10 +4,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath:
-    process.env.NODE_ENV === "production" ? "/horizon-personal-budgeter" : "",
-  assetPrefix:
-    process.env.NODE_ENV === "production" ? "/horizon-personal-budgeter/" : "",
 };
 
 module.exports = nextConfig;
