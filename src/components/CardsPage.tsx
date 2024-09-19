@@ -23,7 +23,7 @@ const cards: CardData[] = [
 const CardsPage: React.FC = () => {
     return (
         <Layout>
-            <div className="space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 <h1 className="text-2xl font-bold text-white mb-6">Your Cards</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {cards.map((card, index) => (

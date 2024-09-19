@@ -19,8 +19,8 @@ export default function Settings() {
 
     return (
         <Layout>
-            <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 p-6 space-y-6">
-                <h1 className="text-4xl font-bold text-white mb-8">Settings</h1>
+            <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500 p-4 sm:p-6 space-y-6">
+                <h1 className="text-2xl sm:text-4xl font-bold text-white mb-8">Settings</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-1">

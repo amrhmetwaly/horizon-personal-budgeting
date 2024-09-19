@@ -3,3 +3,13 @@
 @tailwind utilities;
 
 /* Your custom styles here */
+html,
+body {
+    @apply antialiased;
+}
+
+@media (max-width: 640px) {
+    html {
+        font-size: 14px;
+    }
+}

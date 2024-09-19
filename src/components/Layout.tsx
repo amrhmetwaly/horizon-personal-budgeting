@@ -6,6 +6,7 @@ import { FaHome, FaChartBar, FaCreditCard, FaCog, FaSignOutAlt, FaUser } from 'r
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import Footer from './Footer';  // Add this import
+import { useState } from 'react'; // Add this import
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -14,6 +15,7 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     const router = useRouter();
     const [user] = useAuthState(auth);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const handleLogout = async () => {
         await auth.signOut();
@@ -22,9 +24,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-900 via-blue-700 to-blue-500">
-            {/* Left Sidebar */}
+            {/* Top Navbar for mobile */}
+            <header className="lg:hidden bg-blue-800 bg-opacity-50 shadow-md p-4">
+                <div className="flex justify-between items-center">
+                    <h1 className="text-xl font-bold text-white">Horizon Personal Budgeter</h1>
+                    <button
+                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                        className="text-white focus:outline-none"
+                    >
+                        {isMobileMenuOpen ? 'Close' : 'Menu'}
+                    </button>
+                </div>
+            </header>
+
             <div className="flex flex-1">
-                <div className="w-64 bg-blue-900 bg-opacity-50 text-white p-6">
+                {/* Left Sidebar - hidden on mobile, visible on larger screens */}
+                <div className={`${isMobileMenuOpen ? 'block' : 'hidden'} lg:block w-64 bg-blue-900 bg-opacity-50 text-white p-6`}>
                     <h1 className="text-2xl font-bold mb-8">Horizon Personal Budgeter</h1>
                     <nav>
                         <ul className="space-y-4">
