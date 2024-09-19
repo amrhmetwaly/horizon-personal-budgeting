@@ -1,115 +1,189 @@
-import Image from "next/image";
-import localFont from "next/font/local";
+import { useState, useEffect } from 'react'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { DollarSign, CreditCard, ArrowUpRight, ArrowDownRight, PlusCircle, Send, Wallet } from 'lucide-react'
+import { useRouter } from 'next/router'
+import Layout from '@/components/Layout';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { User } from 'firebase/auth';
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+interface Card {
+  id: string;
+  name: string;
+  lastFour: string;
+  expiryDate: string;
+  type: string;
+}
 
-export default function Home() {
+interface Transaction {
+  id: string;
+  description: string;
+  amount: number;
+  date: string;
+}
+
+// Mocked spending categories data
+const mockedSpendingCategories = [
+  { category: 'Food & Dining', amount: 450 },
+  { category: 'Transportation', amount: 200 },
+  { category: 'Shopping', amount: 350 },
+  { category: 'Utilities', amount: 180 },
+  { category: 'Entertainment', amount: 120 },
+];
+
+// Mocked transactions data
+const mockedTransactions: Transaction[] = [
+  {
+    id: '1',
+    description: 'Restaurant XYZ',
+    amount: 75.50,
+    date: '2023-05-15',
+  },
+  {
+    id: '2',
+    description: 'PAYROLL DEPOSIT',
+    amount: 2500.00,
+    date: '2023-05-14',
+  },
+  {
+    id: '3',
+    description: 'Fashion Store ABC',
+    amount: 120.00,
+    date: '2023-05-13',
+  },
+  {
+    id: '4',
+    description: 'TRANSIT AUTHORITY',
+    amount: 50.00,
+    date: '2023-05-12',
+  },
+  {
+    id: '5',
+    description: 'Netflix',
+    amount: 9.99,
+    date: '2023-05-11',
+  },
+];
+
+export default function Dashboard() {
+  const [animate, setAnimate] = useState<boolean>(false)
+  const [transactions] = useState<Transaction[]>(mockedTransactions)
+  const [spendingCategories] = useState<{ category: string, amount: number }[]>(mockedSpendingCategories)
+  const [user, setUser] = useState<User | null>(null)
+  const router = useRouter()
+
+  useEffect(() => {
+    setAnimate(true)
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+      } else {
+        router.push('/login');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
+
+  const totalBalance = transactions.reduce((sum, t) => sum + t.amount, 0)
+  const totalIncome = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)
+  const totalExpenses = transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + Math.abs(t.amount), 0)
+
+  if (!user) {
+    return <div className="flex items-center justify-center h-screen">Loading user data...</div>;
+  }
+
   return (
-    <div
-      className={`${geistSans.variable} ${geistMono.variable} grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]`}
-    >
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <Layout>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+          {[
+            { title: 'Total Balance', icon: <DollarSign className="h-4 w-4 text-blue-300" />, value: totalBalance },
+            { title: 'Income', icon: <ArrowUpRight className="h-4 w-4 text-green-400" />, value: totalIncome },
+            { title: 'Expenses', icon: <ArrowDownRight className="h-4 w-4 text-red-400" />, value: totalExpenses }
+          ].map((item, index) => (
+            <Card key={index} className={`bg-blue-800 border-blue-700 transform transition-all duration-300 ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`} style={{ transitionDelay: `${index * 100}ms` }}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-blue-100">{item.title}</CardTitle>
+                {item.icon}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">${item.value.toFixed(2)}</div>
+                <p className="text-xs text-blue-300">
+                  {item.title === 'Expenses' ? '-2%' : '+2.5%'} from last month
+                </p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-8">
+          <Card className={`bg-blue-800 border-blue-700 transform transition-all duration-300 ${animate ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'}`}>
+            <CardHeader>
+              <CardTitle className="text-blue-100">Spending Habits</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[200px] sm:h-[250px]">
+                {spendingCategories.map((category, index) => (
+                  <div key={index} className="flex items-center mb-2">
+                    <div className="w-24 truncate text-blue-200">{category.category}</div>
+                    <div className="flex-1 ml-2">
+                      <div className="h-2 bg-blue-600 rounded overflow-hidden">
+                        <div
+                          className="h-full bg-blue-400 rounded transition-all duration-1000 ease-out"
+                          style={{ width: animate ? `${(category.amount / totalExpenses) * 100}%` : '0%' }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="w-16 text-right text-white">${category.amount}</div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className={`bg-blue-800 border-blue-700 transform transition-all duration-300 ${animate ? 'translate-x-0 opacity-100' : 'translate-x-4 opacity-0'}`}>
+            <CardHeader>
+              <CardTitle className="text-blue-100">Recent Transactions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {transactions.slice(0, 5).map((transaction, index) => (
+                  <div key={transaction.id} className={`flex items-center transform transition-all duration-300 ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`} style={{ transitionDelay: `${index * 100}ms` }}>
+                    <div className={`w-2 h-2 rounded-full mr-2 ${transaction.amount > 0 ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <div className="flex-1">
+                      <p className="font-medium text-white">{transaction.description}</p>
+                      <p className="text-sm text-blue-300">{transaction.date}</p>
+                    </div>
+                    <div className={`font-medium ${transaction.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {transaction.amount > 0 ? '+' : '-'}${Math.abs(transaction.amount).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { icon: <Send className="h-4 w-4" />, label: 'Transfer' },
+            { icon: <PlusCircle className="h-4 w-4" />, label: 'Add Money' },
+            { icon: <Wallet className="h-4 w-4" />, label: 'Pay Bills' },
+            { icon: <CreditCard className="h-4 w-4" />, label: 'Manage Cards' }
+          ].map((button, index) => (
+            <Button
+              key={index}
+              className={`flex items-center justify-center gap-2 bg-blue-700 hover:bg-blue-600 text-white transform transition-all duration-300 hover:scale-105 ${animate ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+                }`}
+              style={{ transitionDelay: `${index * 100}ms` }}
+            >
+              {button.icon}
+              {button.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </Layout>
+  )
 }
